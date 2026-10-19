@@ -40,7 +40,7 @@ builder.Services.AddSwaggerGen(options =>
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddEnquiriesModule();
 builder.Services.AddConversationsModule();
-builder.Services.AddNotificationsModule();
+builder.Services.AddNotificationsModule(builder.Configuration);
 builder.Services.AddDocumentsModule();
 builder.Services.AddRecruitmentModule();
 
@@ -89,6 +89,8 @@ app.MapEnquiriesModule();
 app.MapOnboardingModule();
 app.MapConversationsModule();
 app.MapPortalConversationList();
+app.MapNotificationsModule();
+app.MapIncomingEmailModule();
 app.Run();
 
 public partial class Program;

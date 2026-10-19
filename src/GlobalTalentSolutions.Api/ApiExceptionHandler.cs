@@ -4,6 +4,7 @@ using GlobalTalentSolutions.Identity;
 using GlobalTalentSolutions.Enquiries;
 using GlobalTalentSolutions.Conversations;
 using GlobalTalentSolutions.SharedKernel;
+using GlobalTalentSolutions.Notifications;
 using Npgsql;
 
 public sealed class ApiExceptionHandler(
@@ -16,6 +17,9 @@ public sealed class ApiExceptionHandler(
         {
             IdentityConflictException => 409,
             OnboardingConflictException => 409,
+            EmailUnavailableException => 503,
+            EmailEventConflictException => 409,
+            EmailEventForbiddenException => 403,
             EnquiryConflictException => 409,
             EnquiryUnavailableException => 503,
             ConversationConflictException => 409,

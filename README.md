@@ -59,6 +59,11 @@ BE-05 adds designated enquiry conversations, portal replies and private staff no
 See [conversation contracts and checks](docs/conversations.md).
 BE-06 adds enquiry approval/invitations, atomic account links and each user's
 portal conversation list. See [onboarding workflow](docs/onboarding.md).
-Automated email delivery and deployment are subsequent tickets.
+BE-07 adds the transactional email queue, Resend adapter, background retries and
+staff delivery tracking. Delivery is disabled until a provider/domain is configured.
+See [email setup and operations](docs/email-delivery.md).
+BE-08 adds signed webhooks, incoming reply routing, staff review and delivery/bounce
+tracking. Reception remains disabled until provider/domain/signing setup.
+See [incoming email operations](docs/incoming-email.md). Deployment is a subsequent ticket.
 The development Supabase database is now
 provisioned; see docs/database.md for its migration and verification status.

@@ -2,11 +2,22 @@ using System.Data.Common;
 using System.Security.Cryptography;
 using GlobalTalentSolutions.SharedKernel;
 using Npgsql;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace GlobalTalentSolutions.Identity;
 
 public sealed partial class IdentityStore
 {
+    public async Task<string?> Recipient(DbConnection connection,DbTransaction transaction,Guid accountId,Guid? companyId,CancellationToken ct)
+    {
+        await using var cmd=Command("select u.email from gts_identity.users u where u.id=$1 and u.status='active' and ($2::uuid is null or exists(select 1 from gts_identity.memberships m join gts_identity.companies c on c.id=m.company_id where m.company_id=$2 and m.user_id=u.id and m.status='active' and c.status='active'))",(NpgsqlConnection)connection,accountId,companyId);
+        return await cmd.ExecuteScalarAsync(ct)as string;
+    }
+    public async Task<bool> CanSend(DbConnection connection,DbTransaction transaction,Guid invitationId,CancellationToken ct)
+    {
+        await using var cmd=Command("select exists(select 1 from gts_identity.invitations where id=$1 and accepted_at is null and revoked_at is null and expires_at>now())",(NpgsqlConnection)connection,invitationId);
+        return (bool)(await cmd.ExecuteScalarAsync(ct))!;
+    }
     public async Task<Guid[]> ActiveCompanyIds(Guid userId,CancellationToken ct)
     {
         await using var connection=await Database.OpenConnectionAsync(ct);
@@ -27,12 +38,16 @@ public sealed partial class IdentityStore
         var token=Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));var expires=DateTimeOffset.UtcNow.AddDays(3);
         await using var cmd=Command("insert into gts_identity.invitations(email,account_type,company_id,membership_role,token_hash,invited_by,expires_at) values($1,$2,$3,$4,$5,$6,$7) returning id",db,email,accountType,companyId,role,Hash(token),staffId,expires);
         var id=(Guid)(await cmd.ExecuteScalarAsync(ct))!;
-        return new(id,token,expires,options.Value.FrontendUrl.TrimEnd('/')+"/accept-invitation#token="+token);
+        var url=options.Value.FrontendUrl.TrimEnd('/')+"/accept-invitation#token="+token;
+        foreach(var notifications in services.GetServices<IEmailNotifications>())await notifications.InvitationCreated(connection,transaction,id,email,url,ct);
+        return new(id,token,expires,url);
     }
     public async Task<bool> RevokePending(DbConnection connection,DbTransaction transaction,Guid invitationId,CancellationToken ct)
     {
         await using var cmd=Command("update gts_identity.invitations set revoked_at=coalesce(revoked_at,now()) where id=$1 and accepted_at is null returning id",(NpgsqlConnection)connection,invitationId);
-        return await cmd.ExecuteScalarAsync(ct)is Guid;
+        var revoked=await cmd.ExecuteScalarAsync(ct)is Guid;
+        if(revoked)foreach(var notifications in services.GetServices<IEmailNotifications>())await notifications.CancelInvitation(connection,transaction,invitationId,ct);
+        return revoked;
     }
     public async Task<OnboardingInvitationState?> State(Guid invitationId,CancellationToken ct)
     {

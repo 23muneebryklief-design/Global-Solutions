@@ -29,8 +29,9 @@ the request cannot override them or grant staff roles.
    random, stored only as SHA-256 digests, and expire after three days. Save the
    response securely; the token cannot be retrieved afterward. The URL uses the
    configured Supabase:FrontendUrl and puts the token in the fragment.
-5. Until automated email in BE-07 is implemented, staff must share the returned
-   invitation URL manually. The React acceptance page is a separate frontend task.
+5. BE-07 now queues an invitation email automatically. Delivery is currently disabled
+   until provider/domain setup; staff can still share the returned URL manually.
+   The React acceptance page is a separate frontend task.
 6. A new recipient registers through POST /api/auth/register with email, password,
    invitationToken; confirms their email and signs in. Existing recipients sign in.
    POST /api/auth/invitations/accept with token and displayName completes onboarding.

@@ -15,6 +15,7 @@ public static class EnquiriesModule
         services.AddScoped<EnquiryStore>();
         services.AddScoped<IEnquiryStore>(provider=>provider.GetRequiredService<EnquiryStore>());
         services.AddScoped<IEnquiryConversationAccess>(provider=>provider.GetRequiredService<EnquiryStore>());
+        services.AddScoped<IEnquiryMailDetails>(provider=>provider.GetRequiredService<EnquiryStore>());
         services.AddScoped<OnboardingStore>();
         services.AddScoped<IEnquiryOnboarding>(provider=>provider.GetRequiredService<OnboardingStore>());
         services.AddScoped<IInvitationAcceptanceLinker>(provider=>provider.GetRequiredService<OnboardingStore>());

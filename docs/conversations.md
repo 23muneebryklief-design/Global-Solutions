@@ -65,5 +65,6 @@ and never create or modify Supabase Auth users. CI runs the HTTP suite only.
 
 Account/company ownership links are now set through the [BE-06 onboarding flow](onboarding.md).
 Public enquiries remain staff-only until explicitly linked; this ticket
-does not add an email-based claim endpoint. Outbound email and inbound email replies
-come in the notification tickets. Current replies are saved portal messages only.
+does not add an email-based claim endpoint. BE-07 now queues staff reply emails; outbound
+delivery remains disabled pending provider setup. BE-08 now implements [incoming
+email replies](incoming-email.md), also disabled pending provider/domain setup.

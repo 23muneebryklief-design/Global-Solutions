@@ -22,7 +22,7 @@ public interface IIdentityStore
     Task<List<MemberRecord>> Members(Guid companyId, CancellationToken ct);
     Task<bool> UpdateMember(Guid companyId, Guid userId, MembershipInput input, Guid actorId, CancellationToken ct);
 }
-public sealed partial class IdentityStore(IServiceProvider services, IOptions<SupabaseAuthOptions> options) : IIdentityStore, ICompanyAccess, IStaffDirectory, IOnboardingInvitations, ICompanyMemberships
+public sealed partial class IdentityStore(IServiceProvider services, IOptions<SupabaseAuthOptions> options) : IIdentityStore, ICompanyAccess, IStaffDirectory, IOnboardingInvitations, ICompanyMemberships, IInvitationEmailValidity, IEmailContact
 {
     private NpgsqlDataSource Database => services.GetService<NpgsqlDataSource>() ?? throw new IdentityProviderException();
     public async Task<bool> IsActiveStaff(Guid userId, CancellationToken ct)
@@ -100,8 +100,10 @@ public sealed partial class IdentityStore(IServiceProvider services, IOptions<Su
         }
         await using var cmd = Command("insert into gts_identity.invitations(email,account_type,company_id,membership_role,token_hash,invited_by,expires_at) values($1,$2,$3,$4,$5,$6,$7) returning id",connection,input.Email.Trim().ToLowerInvariant(),input.AccountType,input.CompanyId,input.MembershipRole,Hash(token),staffId,expires);
         var id = (Guid)(await cmd.ExecuteScalarAsync(ct))!;
+        var url=options.Value.FrontendUrl.TrimEnd('/')+"/accept-invitation#token="+token;
+        foreach(var notifications in services.GetServices<IEmailNotifications>())await notifications.InvitationCreated(connection,tx,id,input.Email.Trim().ToLowerInvariant(),url,ct);
         await tx.CommitAsync(ct);
-        return new(id,token,expires,options.Value.FrontendUrl.TrimEnd('/')+"/accept-invitation#token="+token);
+        return new(id,token,expires,url);
     }
     public async Task<AppAccount> Accept(AcceptInvitationInput input, Guid authId, string email, CancellationToken ct)
     {

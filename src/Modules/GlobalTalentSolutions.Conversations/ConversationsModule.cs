@@ -16,6 +16,7 @@ public static class ConversationsModule
         services.AddScoped<IEnquiryThreadInitializer,ThreadInitializer>();
         services.AddScoped<IConversationStore,ConversationStore>();
         services.AddScoped<IPortalConversationList,PortalConversationList>();
+        services.AddScoped<IIncomingConversations,IncomingConversations>();
         services.AddRateLimiter(options=>{options.RejectionStatusCode=429;options.AddPolicy("conversation-write",context=>RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString()??"unknown",
             _=>new FixedWindowRateLimiterOptions {PermitLimit=60,Window=TimeSpan.FromMinutes(1),QueueLimit=0}));});

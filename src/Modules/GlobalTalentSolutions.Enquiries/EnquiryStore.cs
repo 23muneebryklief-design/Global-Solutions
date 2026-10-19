@@ -13,7 +13,7 @@ public interface IEnquiryStore
     Task<EnquiryRecord?> Get(Guid id, CancellationToken ct);
     Task<UpdateResult> Update(Guid id, UpdateEnquiry input, CancellationToken ct);
 }
-public sealed class EnquiryStore(IServiceProvider services) : IEnquiryStore, IEnquiryConversationAccess
+public sealed class EnquiryStore(IServiceProvider services) : IEnquiryStore, IEnquiryConversationAccess, IEnquiryMailDetails
 {
     private NpgsqlDataSource Database => services.GetService<NpgsqlDataSource>() ?? throw new EnquiryUnavailableException();
     private const string Columns = "id,reference,enquiry_type,name,email,phone,company_name,country_code,service,message,status,assigned_staff_id,consent_at,privacy_notice_version,created_at,updated_at";
@@ -55,6 +55,8 @@ public sealed class EnquiryStore(IServiceProvider services) : IEnquiryStore, IEn
         await using(var rows=await create.ExecuteReaderAsync(ct))
         {await rows.ReadAsync(ct);id=rows.GetGuid(0);reference=rows.GetString(1);created=rows.GetFieldValue<DateTimeOffset>(2);}
         await services.GetRequiredService<IEnquiryThreadInitializer>().Initialize(connection,tx,new(id,input.Message,created),ct);
+        foreach(var notifications in services.GetServices<IEmailNotifications>())
+            await notifications.EnquiryCreated(connection,tx,id,reference,input.Email,ct);
         await tx.CommitAsync(ct);
         return new(reference,true);
     }
@@ -87,6 +89,22 @@ public sealed class EnquiryStore(IServiceProvider services) : IEnquiryStore, IEn
         await using var cmd=Command($"select {Columns} from gts_enquiries.enquiries where id=$1",connection,id);
         await using var rows=await cmd.ExecuteReaderAsync(ct);
         return await rows.ReadAsync(ct)?Record(rows):null;
+    }
+    public async Task<EnquiryMailDetails?> MailDetails(System.Data.Common.DbConnection connection,System.Data.Common.DbTransaction transaction,Guid enquiryId,CancellationToken ct)
+    {
+        string reference,email;Guid? owner,company;
+        await using(var cmd=Command("select reference,email,user_id,company_id from gts_enquiries.enquiries where id=$1",(NpgsqlConnection)connection,enquiryId))
+        await using(var rows=await cmd.ExecuteReaderAsync(ct))
+        {
+            if(!await rows.ReadAsync(ct))return null;
+            reference=rows.GetString(0);email=rows.GetString(1);owner=rows.IsDBNull(2)?null:rows.GetGuid(2);company=rows.IsDBNull(3)?null:rows.GetGuid(3);
+        }
+        if(owner is {} account)
+        {
+            var current=await services.GetRequiredService<IEmailContact>().Recipient(connection,transaction,account,company,ct);
+            return current is null?null:new(reference,current,account);
+        }
+        return company.HasValue?null:new(reference,email);
     }
     public async Task<EnquiryConversationSource?> Source(Guid enquiryId,CancellationToken ct)
     {

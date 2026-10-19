@@ -2,7 +2,7 @@
 
 ## Scope
 
-Eight ordered SQL migrations in `supabase/migrations` create 24 application tables.
+Ten ordered SQL migrations in `supabase/migrations` create 24 application tables.
 They define storage and integrity rules, not authentication endpoints, enquiry
 workflows, mail workers, malware scanning, or storage bucket provisioning.
 Those behaviours belong to subsequent tickets. No remote database is changed
@@ -15,8 +15,12 @@ and a rolled-back enquiry write/read test. Versions are recorded in
 `supabase_migrations.schema_migrations`. Credentials remain in local user secrets.
 The .NET API readiness endpoint also returned HTTP 200 against this hosted project.
 BE-06 added migration 20261019000800 for enquiry onboarding. The hosted database
-now has eight recorded migrations and 24 application tables; RLS and browser-grant
+then had eight recorded migrations and 24 application tables; RLS and browser-grant
 checks passed again. See [onboarding](onboarding.md).
+BE-07 added 20261019000900 for email delivery. Nine migrations were then applied;
+RLS/browser-grant checks passed again. See [email operations](email-delivery.md).
+BE-08 added 20261019001000 for incoming email and delivery signals. Ten migrations
+are now applied, with 24 RLS-protected application tables and no browser table grants.
 
 Advisor review: no default-severity items were shown. Informational results include
 RLS without browser policies (intentional for these private schemas) and unused
@@ -110,7 +114,7 @@ GitHub CI runs this suite alongside the .NET build and API smoke checks.
 2. Install the official Supabase CLI and sign in with `supabase login`.
 3. From the repository root, run `supabase link --project-ref YOUR_DEV_PROJECT_REF`.
    Enter the database password only when prompted; never commit it or send it in chat.
-4. Run `supabase db push --dry-run` and review the pending migrations (eight for a fresh database).
+4. Run `supabase db push --dry-run` and review the pending migrations (ten for a fresh database).
 5. Run `supabase db push`, then `supabase migration list` to confirm all versions.
 6. Check all six module schemas exist and remain absent from exposed API schemas.
 7. Run the full local Supabase verification below before staging deployment.

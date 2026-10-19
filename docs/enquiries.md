@@ -115,8 +115,8 @@ workflow. There are no deletion endpoints in this ticket.
 
 BE-05 now creates the enquiry, its designated thread and original visitor message
 in one database transaction. See [conversation contracts](conversations.md).
-Confirmation emails, staff alerts and reliable delivery are BE-07.
-Submitting here does not yet send an email.
+BE-07 now queues confirmation emails and staff alerts transactionally. Delivery
+remains disabled until provider setup; see [email delivery](email-delivery.md).
 No frontend files from the separate design repository were changed.
 
 ```powershell

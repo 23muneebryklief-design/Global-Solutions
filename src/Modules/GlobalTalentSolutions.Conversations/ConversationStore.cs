@@ -84,6 +84,13 @@ public sealed class ConversationStore(IServiceProvider services,IEnquiryConversa
         await using(var cmd=Command("insert into gts_conversations.messages(thread_id,sender_kind,sender_user_id,channel,body,client_message_key) values($1,$2,$3,'portal',$4,$5) returning "+MessageColumns,connection,threadId,IsStaff(user)?"staff":"client",userId,body,input.ClientMessageKey.Value))
         await using(var rows=await cmd.ExecuteReaderAsync(ct)){await rows.ReadAsync(ct);message=Message(rows);}
         await using(var touch=Command("update gts_conversations.threads set updated_at=now() where id=$1",connection,threadId))await touch.ExecuteNonQueryAsync(ct);
+        if(IsStaff(user))foreach(var notifications in services.GetServices<IEmailNotifications>())
+        {
+            await using var thread=Command("select enquiry_id from gts_conversations.threads where id=$1",connection,threadId);
+            var enquiryId=(Guid)(await thread.ExecuteScalarAsync(ct))!;
+            var target=await services.GetRequiredService<IEnquiryMailDetails>().MailDetails(connection,tx,enquiryId,ct);
+            if(target is not null)await notifications.StaffReplied(connection,tx,message.Id,enquiryId,target.Reference,target.Email,body,ct);
+        }
         await tx.CommitAsync(ct);
         return new(message,true);
     }

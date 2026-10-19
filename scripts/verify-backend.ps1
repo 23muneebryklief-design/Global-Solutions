@@ -8,6 +8,8 @@ $job = Start-Job -ScriptBlock {
     $env:ASPNETCORE_URLS = "http://127.0.0.1:$port"
     # This smoke test intentionally starts without a hosted database secret.
     $env:ConnectionStrings__Supabase = ''
+    $env:Email__Enabled = 'false'
+    $env:IncomingEmail__Enabled = 'false'
     Set-Location (Split-Path $dll -Parent)
     dotnet $dll
 } -ArgumentList $apiDll, $Port
@@ -31,6 +33,11 @@ try {
     $portalPath = '/api/portal/conversations/{id}/messages'
     if (-not $swagger.paths.$portalPath.post -or $swagger.paths.$portalPath.get.security.Count -eq 0) { throw 'Protected conversation routes missing from OpenAPI.' }
     if (-not $swagger.paths.'/api/portal/conversations'.get -or -not $swagger.paths.'/api/admin/enquiries/{id}/onboarding'.post) { throw 'Onboarding or portal list route missing.' }
+    if (-not $swagger.paths.'/api/admin/emails/configuration'.get) { throw 'Email administration routes missing.' }
+    if (-not $swagger.paths.'/api/webhooks/resend'.post -or $swagger.paths.'/api/webhooks/resend'.post.security.Count -gt 0) { throw 'Signed webhook route must not require a portal token.' }
+    if ($swagger.paths.'/api/admin/email-events/{id}/review'.post.security.Count -eq 0) { throw 'Email review route must require authorization.' }
+    $webhook = Invoke-WebRequest "$base/api/webhooks/resend" -Method Post -ContentType 'application/json' -Body '{}' -SkipHttpErrorCheck
+    if ($webhook.StatusCode -ne 503) { throw 'Disabled incoming email must report 503.' }
     $portal = Invoke-WebRequest "$base/api/portal/conversations/$([guid]::NewGuid())/messages" -SkipHttpErrorCheck
     if ($portal.StatusCode -ne 401 -or $portal.Headers['Cache-Control'] -notcontains 'no-store') { throw 'Portal must reject anonymous access and prevent caching.' }
     $missing = Invoke-WebRequest "$base/api/not-found" -SkipHttpErrorCheck

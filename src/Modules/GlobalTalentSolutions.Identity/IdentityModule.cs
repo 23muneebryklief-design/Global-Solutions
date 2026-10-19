@@ -27,6 +27,8 @@ public static class IdentityModule
         services.AddScoped<IStaffDirectory>(provider=>provider.GetRequiredService<IdentityStore>());
         services.AddScoped<IOnboardingInvitations>(provider=>provider.GetRequiredService<IdentityStore>());
         services.AddScoped<ICompanyMemberships>(provider=>provider.GetRequiredService<IdentityStore>());
+        services.AddScoped<IInvitationEmailValidity>(provider=>provider.GetRequiredService<IdentityStore>());
+        services.AddScoped<IEmailContact>(provider=>provider.GetRequiredService<IdentityStore>());
         services.AddAuthentication(SessionAuthentication.SchemeName)
             .AddScheme<AuthenticationSchemeOptions,SessionAuthentication>(SessionAuthentication.SchemeName,_=>{});
         services.AddAuthorization(options =>
