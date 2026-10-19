@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+ <ItemGroup>
+  <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  <ProjectReference Include="../../src/Modules/GlobalTalentSolutions.Conversations/GlobalTalentSolutions.Conversations.csproj" />
+  <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.0" />
+  <ProjectReference Include="../../src/Modules/GlobalTalentSolutions.Enquiries/GlobalTalentSolutions.Enquiries.csproj" />
+  <ProjectReference Include="../../src/Modules/GlobalTalentSolutions.Identity/GlobalTalentSolutions.Identity.csproj" />
+ </ItemGroup>
+</Project>

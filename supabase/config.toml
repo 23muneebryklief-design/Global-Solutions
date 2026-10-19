@@ -1,0 +1,20 @@
+project_id = "global-talent-solutions"
+
+[api]
+enabled = true
+port = 54321
+# Module schemas stay private. The .NET backend will use a server-only connection.
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false

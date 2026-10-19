@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup><UserSecretsId>global-talent-solutions-backend</UserSecretsId></PropertyGroup>
+  <ItemGroup>
+    <Content Include="Certificates/supabase-ca.crt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <PackageReference Include="Npgsql" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <ProjectReference Include="../Modules/GlobalTalentSolutions.Identity/GlobalTalentSolutions.Identity.csproj" />
+    <ProjectReference Include="../Modules/GlobalTalentSolutions.Enquiries/GlobalTalentSolutions.Enquiries.csproj" />
+    <ProjectReference Include="../Modules/GlobalTalentSolutions.Conversations/GlobalTalentSolutions.Conversations.csproj" />
+    <ProjectReference Include="../Modules/GlobalTalentSolutions.Notifications/GlobalTalentSolutions.Notifications.csproj" />
+    <ProjectReference Include="../Modules/GlobalTalentSolutions.Documents/GlobalTalentSolutions.Documents.csproj" />
+    <ProjectReference Include="../Modules/GlobalTalentSolutions.Recruitment/GlobalTalentSolutions.Recruitment.csproj" />
+  </ItemGroup>
+</Project>

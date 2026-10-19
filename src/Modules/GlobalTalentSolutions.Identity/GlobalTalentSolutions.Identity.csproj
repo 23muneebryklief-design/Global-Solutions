@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <InternalsVisibleTo Include="OnboardingChecks" />
+    <PackageReference Include="Npgsql" Version="10.0.0" />
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../GlobalTalentSolutions.SharedKernel/GlobalTalentSolutions.SharedKernel.csproj" />
+  </ItemGroup>
+</Project>
