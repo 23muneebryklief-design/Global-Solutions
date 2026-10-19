@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+.vs/
+.vscode/
+*.user
+.env
+.env.*
+!.env.example
+**/appsettings.Development.json
+TestResults/
+node_modules/
+supabase/.temp/
+supabase/.branches/

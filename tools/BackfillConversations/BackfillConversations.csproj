@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+ <PropertyGroup><OutputType>Exe</OutputType></PropertyGroup>
+ <ItemGroup>
+  <ProjectReference Include="../../src/Modules/GlobalTalentSolutions.Conversations/GlobalTalentSolutions.Conversations.csproj" />
+  <ProjectReference Include="../../src/Modules/GlobalTalentSolutions.Enquiries/GlobalTalentSolutions.Enquiries.csproj" />
+  <ProjectReference Include="../../src/Modules/GlobalTalentSolutions.Identity/GlobalTalentSolutions.Identity.csproj" />
+ </ItemGroup>
+</Project>

@@ -1,0 +1,41 @@
+name: Backend checks
+on:
+  push:
+    branches: [main, backend]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - run: dotnet restore GlobalTalentSolutions.sln
+      - run: dotnet build GlobalTalentSolutions.sln --configuration Release --no-restore
+      - run: dotnet build tests/Identity/IdentityChecks.csproj --configuration Release -m:1
+      - run: dotnet run --project tests/Identity/IdentityChecks.csproj --configuration Release --no-build
+      - run: dotnet build tests/Enquiries/EnquiryChecks.csproj --configuration Release -m:1
+      - run: dotnet run --project tests/Enquiries/EnquiryChecks.csproj --configuration Release --no-build
+      - run: dotnet build tests/Conversations/ConversationChecks.csproj --configuration Release -m:1
+      - run: dotnet run --project tests/Conversations/ConversationChecks.csproj --configuration Release --no-build
+      - run: dotnet build tests/Onboarding/OnboardingChecks.csproj --configuration Release -m:1
+      - run: dotnet run --project tests/Onboarding/OnboardingChecks.csproj --configuration Release --no-build
+      - run: dotnet build tests/Notifications/NotificationChecks.csproj --configuration Release -m:1
+      - run: dotnet run --project tests/Notifications/NotificationChecks.csproj --configuration Release --no-build
+      - run: dotnet build tests/IncomingEmail/IncomingEmailChecks.csproj --configuration Release -m:1
+      - run: dotnet run --project tests/IncomingEmail/IncomingEmailChecks.csproj --configuration Release --no-build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tests/Database/package-lock.json
+      - run: npm ci --ignore-scripts
+        working-directory: tests/Database
+      - run: npm test
+        working-directory: tests/Database
+      - name: API smoke checks
+        shell: pwsh
+        run: ./scripts/verify-backend.ps1 -Configuration Release
